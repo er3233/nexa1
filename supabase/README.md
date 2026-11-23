@@ -30,6 +30,7 @@ SQL Editor'de **sırayla** çalıştırın:
 | 18 | `migrations/018_repair_live_typing_and_chat_lock.sql` | 011–017 onarım zinciri (tek idempotent dosya) |
 | 19 | `migrations/019_disappearing_messages.sql` | Kaybolan mesajlar: expires_at, disappearing_seconds, RLS, RPC |
 | 20 | `migrations/020_fix_user_search_at_prefix.sql` | Kullanıcı aramada `@` öneki düzeltmesi |
+| 21 | `migrations/021_push_subscriptions.sql` | Web Push abonelikleri ve erişim politikaları |
 
 ### Mevcut projede
 Kullanıcı arama `@` öneki için **yalnızca `migrations/020_fix_user_search_at_prefix.sql`** çalıştırın.
@@ -39,6 +40,12 @@ Kullanıcı arama `@` öneki için **yalnızca `migrations/020_fix_user_search_a
 SQL Editor’de **sırayla**:
 1. `schema.sql` (temel tablolar + 001–018 birleşik + 020 `@` arama düzeltmesi)
 2. `migrations/019_disappearing_messages.sql` (schema.sql’de yok)
+3. Web Push kullanılacaksa `migrations/021_push_subscriptions.sql` (schema.sql’de yok)
+
+Bu sıra yalnızca yeni ve boş proje içindir. Mevcut veritabanında uygulanan şema
+ve migration'ları önce kontrol edin; toplu şemayı yeniden çalıştırmayın.
+Data API tablo izinlerini ve RLS politikalarını doğrulayın; SQL ile oluşturulan
+tabloların API erişimi proje ayarlarına göre ayrıca GRANT gerektirebilir.
 
 `migrations/001`…`020` tek başına boş projede **çalışmaz** — temel tablolar yalnızca `schema.sql` içindedir.
 Ayrıntılı sıra: `APPLY_NEW_EMPTY_PROJECT.sql`.
