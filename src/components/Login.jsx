@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Shield, Fingerprint, User, KeyRound, AlertTriangle, AtSign, Loader2 } from "lucide-react";
+import { Shield, User, KeyRound, AlertTriangle, AtSign, Loader2 } from "lucide-react";
 import { signIn, signUp, resetPassword, toTurkishAuthError } from "../services/auth";
 import { isSupabaseConfigured } from "../lib/supabase";
+import NexaModel from "./NexaModel";
 
 export default function Login() {
   const [mode, setMode] = useState("login"); // "login" | "signup" | "reset"
@@ -79,12 +80,13 @@ export default function Login() {
   };
 
   return (
-    <div className="h-full flex flex-col px-7 nx-in relative z-10">
+    <div className="nx-login h-full flex flex-col px-7 nx-in relative z-10">
       <div className="flex-1 flex flex-col justify-center">
-        <div className="mb-8">
-          <p className="nx-mono text-[9px] tracking-[0.34em] mb-3" style={{ color: "var(--txt3)" }}>KİŞİSEL GÜVENLİ ERİŞİM</p>
-          <h1 className="nx-display text-[38px] font-bold tracking-tight leading-none">NEXA</h1>
-          <p className="text-[13.5px] mt-3" style={{ color: "var(--txt2)" }}>Zamanın ötesinde güvenli iletişim.</p>
+        <div className="nx-login-heading mb-8">
+          <NexaModel />
+          <p className="nx-mono text-[9px] tracking-[0.24em] mb-3" style={{ color: "var(--txt3)" }}>DAHA YAKIN İLETİŞİM</p>
+          <h1 className="nx-display text-[38px] font-bold tracking-tight leading-none">NEXA<span className="nx-title-dot">.</span></h1>
+          <p className="text-[13.5px] mt-3" style={{ color: "var(--txt2)" }}>Konuşmaların için özel bir alan.</p>
         </div>
 
         {/* mod seçici */}
@@ -134,21 +136,21 @@ export default function Login() {
           {isSignup && (
             <div className="nx-surface rounded-[20px] flex items-center gap-3 px-4 nx-in" style={{ height: 52 }}>
               <AtSign size={15} strokeWidth={1.8} style={{ color: "var(--txt3)" }} />
-              <input value={username} onChange={(e) => setUsername(e.target.value)} onKeyDown={onKeyDown}
+              <input aria-label="Kullanıcı adı" value={username} onChange={(e) => setUsername(e.target.value)} onKeyDown={onKeyDown}
                 placeholder="Kullanıcı adı (opsiyonel)" autoComplete="username"
                 className="flex-1 bg-transparent outline-none text-[13.5px]" style={{ color: "var(--txt)" }} />
             </div>
           )}
           <div className="nx-surface rounded-[20px] flex items-center gap-3 px-4" style={{ height: 52 }}>
             <User size={15} strokeWidth={1.8} style={{ color: "var(--txt3)" }} />
-            <input value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={onKeyDown}
+            <input aria-label="E-posta" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={onKeyDown}
               type="email" placeholder="E-posta" autoComplete="email"
               className="flex-1 bg-transparent outline-none text-[13.5px]" style={{ color: "var(--txt)" }} />
           </div>
           {!isReset && (
             <div className="nx-surface rounded-[20px] flex items-center gap-3 px-4" style={{ height: 52 }}>
               <KeyRound size={15} strokeWidth={1.8} style={{ color: "var(--txt3)" }} />
-              <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} onKeyDown={onKeyDown}
+              <input aria-label="Parola" type="password" value={pw} onChange={(e) => setPw(e.target.value)} onKeyDown={onKeyDown}
                 placeholder="Parola" autoComplete={isSignup ? "new-password" : "current-password"}
                 className="flex-1 bg-transparent outline-none text-[13.5px]" style={{ color: "var(--txt)" }} />
             </div>
@@ -174,24 +176,15 @@ export default function Login() {
             {busy && <Loader2 size={15} className="animate-spin" />}
             {isReset ? "Sıfırlama Bağlantısı Gönder" : isSignup ? "Hesap Oluştur" : "Güvenli Giriş"}
           </button>
-          {/* biyometrik — dekoratif sensör halkası (görsel) */}
-          <div className="relative w-[52px] h-[52px] rounded-full flex items-center justify-center"
-            style={{ background: "var(--ink2)", border: "1px solid var(--line)" }} aria-hidden>
-            <svg className="absolute inset-0" width="52" height="52" viewBox="0 0 52 52" fill="none">
-              <circle cx="26" cy="26" r="24.5" stroke="var(--blue)" strokeWidth="1" strokeLinecap="round"
-                strokeDasharray="30 130" opacity="0.7" style={{ animation: "nxDash 4s linear infinite" }} />
-            </svg>
-            <Fingerprint size={20} strokeWidth={1.6} style={{ color: "var(--txt2)" }} />
-          </div>
         </div>
       </div>
 
       <div className="pb-8 flex items-center justify-center gap-3">
         <span className="flex items-center gap-1.5 nx-mono text-[8.5px] tracking-[0.18em]" style={{ color: "var(--txt3)" }}>
-          <Shield size={10} style={{ color: "var(--green)" }} /> CİHAZ GÜVENLİ
+          <Shield size={10} style={{ color: "var(--txt2)" }} /> NEXA CHAT
         </span>
         <span className="w-[3px] h-[3px] rounded-full" style={{ background: "var(--txt3)" }} />
-        <span className="nx-mono text-[8.5px] tracking-[0.18em]" style={{ color: "var(--txt3)" }}>TLS 1.3 ŞİFRELİ BAĞLANTI</span>
+        <span className="nx-mono text-[8.5px] tracking-[0.18em]" style={{ color: "var(--txt3)" }}>İLETİŞİM ALANIN</span>
       </div>
     </div>
   );

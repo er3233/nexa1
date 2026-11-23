@@ -77,6 +77,10 @@ export function useLiveTyping(conversationId, meId) {
     chanRef.current = subscribeLiveDrafts(conversationId, meId, applyRemote);
     return () => {
       clearTimeout(staleRef.current);
+      clearTimeout(throttleRef.current);
+      throttleRef.current = null;
+      dirtyRef.current = false;
+      pendingRef.current = "";
       unsubscribeLiveDrafts(chanRef.current);
       chanRef.current = null;
       clearLiveDraft(conversationId).catch(() => {});

@@ -7,12 +7,16 @@
 -- UYGULA (SQL Editor'de, sırayla):
 --   1) supabase/schema.sql
 --   2) supabase/migrations/019_disappearing_messages.sql
+--   3) supabase/migrations/021_push_subscriptions.sql (Web Push için)
 --
 -- NOTLAR:
 -- - migrations/001..020 tek başına BOŞ projede ÇALIŞMAZ:
 --   temel tablolar (profiles, conversations, …) yalnızca schema.sql'dedir.
 -- - schema.sql = 001..018 birleşik + 020 (@ arama) içerir.
 -- - 019 (kaybolan mesajlar) schema.sql'de YOKTUR → ayrıca gerekir.
+-- - 021 (push abonelikleri) schema.sql'de YOKTUR → Web Push için ayrıca gerekir.
+-- - Mevcut veritabanında schema.sql veya bu sırayı körü körüne çalıştırmayın;
+--   önce uygulanmış şema ve migration'ları karşılaştırıp yedek alın.
 -- - 001..018'i schema.sql SONRASI tekrar çalıştırmayın (gereksiz).
 -- - Hardcoded project URL / service_role / eski UUID YOKTUR.
 -- ============================================================

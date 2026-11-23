@@ -63,11 +63,20 @@ export function useMessages(conversationId, userId, reloadToken = 0, disappearin
       try {
         const { messages: rows, hasMore: more } = await getMessagesPage(conversationId, { limit: MESSAGE_PAGE_SIZE });
         if (!active) return;
-        msgIdsRef.current = new Set(rows.map((r) => r.id));
-        setMessages(rows);
+        setMessages((current) => {
+          const byId = new Map(rows.map((row) => [row.id, row]));
+          current.forEach((row) => byId.set(row.id, row));
+          const merged = [...byId.values()].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+          msgIdsRef.current = new Set(merged.map((row) => row.id));
+          return merged;
+        });
         setHasMore(more);
         const rx = await getReactionsForMessages(rows.map((r) => r.id));
-        if (active) setReactions(rx);
+        if (active) setReactions((current) => {
+          const byId = new Map(rx.map((row) => [row.id, row]));
+          current.forEach((row) => byId.set(row.id, row));
+          return [...byId.values()];
+        });
         const lastId = rows[rows.length - 1]?.id || null;
         markRead(conversationId, lastId).catch(() => {});
         if (disappearingActive) cleanupExpiredMessages(conversationId).catch(() => {});
@@ -174,9 +183,11 @@ export function useMessages(conversationId, userId, reloadToken = 0, disappearin
           metadata: opts.metadata || {},
         });
         upsertMessage(row);
+        return true;
       } catch (e) {
         logDevError("mesaj gönderme", e);
-        setError("Mesaj gönderilemedi.");
+        setError("Mesaj gönderilemedi. Metninizi kontrol edip tekrar deneyin.");
+        return false;
       } finally {
         setSending(false);
       }
@@ -191,9 +202,11 @@ export function useMessages(conversationId, userId, reloadToken = 0, disappearin
       try {
         const row = await apiEdit({ messageId, content: text });
         upsertMessage(row);
+        return true;
       } catch (e) {
         logDevError("mesaj düzenleme", e);
         setError("Mesaj düzenlenemedi.");
+        return false;
       }
     },
     [upsertMessage]

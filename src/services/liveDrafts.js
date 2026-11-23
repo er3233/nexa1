@@ -25,7 +25,7 @@ export function subscribeLiveDrafts(conversationId, meId, onEvent) {
       "postgres_changes",
       { event: "*", schema: "public", table: "live_drafts", filter: `conversation_id=eq.${conversationId}` },
       (payload) => {
-        const row = payload.new || payload.old;
+        const row = payload.eventType === "DELETE" ? payload.old : payload.new;
         if (!row || row.sender_id === meId) return;
         dlog(payload.eventType, { sender: row.sender_id, conv: row.conversation_id });
         onEvent?.(payload.eventType, row);

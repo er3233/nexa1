@@ -77,8 +77,18 @@ const CSS = `
 .nx-display{font-family:'Sora',sans-serif; letter-spacing:-0.02em;}
 .nx-mono{font-family:'JetBrains Mono',monospace;}
 
-.nx-surface{ background:var(--ink2); border:1px solid var(--line); }
-.nx-raised{ background:linear-gradient(180deg, var(--ink3), var(--ink2)); border:1px solid var(--line); box-shadow:0 12px 32px -16px rgba(0,0,0,0.7); }
+.nx-login{background:radial-gradient(ellipse at 50% 0%,rgba(91,128,170,.14),transparent 43%),linear-gradient(160deg,#10151c 0%,#080b10 55%,#0d1219 100%);}
+.nx-login-heading{position:relative;}
+.nx-emblem{display:grid;place-items:center;width:68px;height:68px;margin-bottom:30px;border:1px solid rgba(201,218,237,.2);border-radius:23px;background:linear-gradient(145deg,rgba(255,255,255,.14),rgba(255,255,255,.025) 48%,rgba(66,116,169,.13));box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 18px 38px rgba(0,0,0,.4),0 0 38px rgba(86,144,207,.1);transform:perspective(400px) rotateX(8deg) rotateY(-12deg);animation:nx-emblem-float 7s ease-in-out infinite;}
+.nx-emblem span{font-family:'Sora',sans-serif;font-weight:700;font-size:32px;letter-spacing:-.09em;color:#e7f2ff;text-shadow:0 2px 12px rgba(136,193,255,.45);}
+.nx-title-dot{color:#8cb8de;}
+.nx-login .nx-surface{background:linear-gradient(145deg,rgba(255,255,255,.065),rgba(255,255,255,.025));border-color:rgba(222,235,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.045);}
+.nx-login input:focus-visible{outline:2px solid #8cb8de;outline-offset:4px;border-radius:2px;}
+@keyframes nx-emblem-float{0%,100%{transform:perspective(400px) rotateX(8deg) rotateY(-12deg) translateY(0)}50%{transform:perspective(400px) rotateX(4deg) rotateY(8deg) translateY(-4px)}}
+
+.nx-surface{ background:linear-gradient(145deg,rgba(40,48,59,.72),rgba(18,23,31,.82)); border:1px solid rgba(214,229,247,.09); box-shadow:inset 0 1px rgba(255,255,255,.035); }
+.nx-raised{ background:linear-gradient(145deg,rgba(48,57,69,.88),rgba(20,25,33,.94)); border:1px solid rgba(214,229,247,.12); box-shadow:inset 0 1px rgba(255,255,255,.07),0 12px 32px -16px rgba(0,0,0,.7); }
+.nx-root button:focus-visible,.nx-root input:focus-visible,.nx-root select:focus-visible,.nx-root textarea:focus-visible{outline:2px solid #9cbdda;outline-offset:2px;}
 .nx-hairline-b{ border-bottom:1px solid var(--line); }
 .nx-scroll{scrollbar-width:none;} .nx-scroll::-webkit-scrollbar{display:none;}
 /* TEK viewport: visualViewport.height/top. Klavye yüksekliği ikinci kez düşülmez. */
@@ -421,20 +431,25 @@ function ChatView({ contact, conversationId, meId, meEmail, onBack, onBlock, onR
     setTimeout(() => setHighlightId(null), 1600);
   };
 
-  const submit = () => {
+  const submit = async () => {
     const t = input.trim();
     if (editingId) {
-      if (t) edit(editingId, t);
-      setEditingId(null);
-      setInput("");
+      if (!t) return;
+      const saved = await edit(editingId, t);
+      if (saved) {
+        setEditingId(null);
+        setInput((current) => current.trim() === t ? "" : current);
+      }
       return;
     }
     if (!t || sending) return;
-    send(t, { replyToId: replyTo?.id || null });
-    setInput("");
-    setReplyTo(null);
-    live.clearDraft();
-    lock.touch();
+    const sent = await send(t, { replyToId: replyTo?.id || null });
+    if (sent) {
+      setInput((current) => current.trim() === t ? "" : current);
+      setReplyTo(null);
+      live.clearDraft();
+      lock.touch();
+    }
   };
 
   const onMediaUploaded = (meta) => {

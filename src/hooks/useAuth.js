@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { getSession, onAuthChange } from "../services/auth";
 import { getMyProfile } from "../services/profiles";
 
@@ -8,29 +8,34 @@ export function useAuth() {
   const [profile, setProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [recovery, setRecovery] = useState(false);
+  const profileRequest = useRef(0);
 
   const loadProfile = useCallback(async (uid) => {
+    const request = ++profileRequest.current;
     if (!uid) {
       setProfile(null);
+      setProfileLoading(false);
       return;
     }
     setProfileLoading(true);
     try {
       const p = await getMyProfile(uid);
-      setProfile(p);
+      if (request === profileRequest.current) setProfile(p);
     } catch (_) {
-      setProfile(null);
+      if (request === profileRequest.current) setProfile(null);
     } finally {
-      setProfileLoading(false);
+      if (request === profileRequest.current) setProfileLoading(false);
     }
   }, []);
 
   useEffect(() => {
     let mounted = true;
+    let authEventSeen = false;
+    let profileTimer;
 
     getSession()
       .then((s) => {
-        if (!mounted) return;
+        if (!mounted || authEventSeen) return;
         setSession(s);
         setLoading(false);
         if (s?.user?.id) loadProfile(s.user.id);
@@ -42,14 +47,28 @@ export function useAuth() {
     const {
       data: { subscription },
     } = onAuthChange((s, event) => {
+      if (!mounted) return;
+      authEventSeen = true;
       setSession(s);
+      setLoading(false);
       if (event === "PASSWORD_RECOVERY") setRecovery(true);
-      if (s?.user?.id) loadProfile(s.user.id);
-      else setProfile(null);
+      // Supabase auth callback içinden başka Supabase çağrısı başlatmayın.
+      ++profileRequest.current;
+      clearTimeout(profileTimer);
+      if (s?.user?.id) {
+        setProfile((current) => current?.id === s.user.id ? current : null);
+        setProfileLoading(true);
+        profileTimer = setTimeout(() => { if (mounted) loadProfile(s.user.id); }, 0);
+      } else {
+        setProfile(null);
+        setProfileLoading(false);
+      }
     });
 
     return () => {
       mounted = false;
+      ++profileRequest.current;
+      clearTimeout(profileTimer);
       subscription?.unsubscribe();
     };
   }, [loadProfile]);

@@ -1,5 +1,5 @@
 // Supabase Edge Function: yeni mesaj → Web Push (badge count dahil)
-// Secrets: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT
+// Secrets: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT, PUSH_WEBHOOK_SECRET
 // Deploy: supabase functions deploy push-on-message
 // Database Webhook: messages INSERT → bu fonksiyon
 
@@ -13,6 +13,14 @@ const cors = {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
+  if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
+
+  // Webhook, JWT doğrulaması etkin olsa bile yalnızca yapılandırılmış çağırandan gelmeli.
+  const webhookSecret = Deno.env.get("PUSH_WEBHOOK_SECRET");
+  if (!webhookSecret) return new Response("Webhook not configured", { status: 503 });
+  if (req.headers.get("x-webhook-secret") !== webhookSecret) {
+    return new Response("Unauthorized", { status: 401 });
+  }
 
   try {
     const vapidPublic = Deno.env.get("VAPID_PUBLIC_KEY");

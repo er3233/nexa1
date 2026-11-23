@@ -40,7 +40,7 @@ export function validateFile(file, kind = "chat") {
     if (!IMAGE_TYPES.includes(file.type)) return { ok: false, error: "Avatar yalnızca resim olabilir (jpg, png, gif, webp)." };
     if (file.size > AVATAR_MAX_BYTES) return { ok: false, error: "Avatar en fazla 3 MB olabilir." };
   } else {
-    if (file.type && !CHAT_MEDIA_TYPES.includes(file.type)) return { ok: false, error: "Bu dosya türü desteklenmiyor." };
+    if (!CHAT_MEDIA_TYPES.includes(file.type)) return { ok: false, error: "Dosya türü doğrulanamadı veya desteklenmiyor." };
     if (file.size > CHAT_MEDIA_MAX_BYTES) return { ok: false, error: "Dosya en fazla 25 MB olabilir." };
   }
   return { ok: true };

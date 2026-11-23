@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { supabase } from "../lib/supabase";
+import { supabase, supabaseUrl, supabasePublicKey } from "../lib/supabase";
 import {
   getIceServers, mediaConstraints, RING_TIMEOUT_MS,
   startCall as apiStartCall, acceptCall as apiAcceptCall, rejectCall as apiRejectCall,
@@ -420,11 +420,11 @@ export function useCall(meId) {
       void supabase.auth.getSession().then(({ data }) => {
         const token = data.session?.access_token;
         if (!token) return;
-        fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/rpc/${rpc}`, {
+        fetch(`${supabaseUrl}/rest/v1/rpc/${rpc}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+            apikey: supabasePublicKey,
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ call_id: cur.id }),
